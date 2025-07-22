@@ -10,7 +10,7 @@ export class QuizController {
     create(@Body() createQuizDTO: CreateQuizDTO) {
         return this.quizService.createQuiz(createQuizDTO);
     }
-    @Get()
+    @Get('all')
     findAll() {
         return this.quizService.getAllQuizzes();
     }
