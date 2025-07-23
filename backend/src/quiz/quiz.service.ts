@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma/prisma.service';
 import { CreateQuizDTO } from 'src/dto/quiz.dto';
+import { UpdateQuizDTO } from 'src/dto/updateQuiz.dto';
 
 @Injectable()
 export class QuizService {
@@ -34,10 +35,17 @@ export class QuizService {
   }
 
   async getAllQuizzes() {
-    return this.prisma.quiz.findMany({
-      include: { questions: true },
-    });
-  }
+  return this.prisma.quiz.findMany({
+    include: {
+      questions: {
+        include: {
+          answers: true,
+        },
+      },
+    },
+  });
+}
+
 
   async getQuizById(id: string) {
 
@@ -66,4 +74,37 @@ export class QuizService {
       where: { id: Number(id) },
     });
   }
+
+ async updateQuiz(id: string, data: UpdateQuizDTO) {
+  const { title, description, questions } = data;
+
+  return this.prisma.quiz.update({
+    where: { id: Number(id) },
+    data: {
+      title,
+      description,
+      ...(questions
+        ? {
+            questions: {
+              deleteMany: {}, // видаляємо всі старі питання (якщо хочеш іншу логіку — скажи)
+              create: questions.map(q => ({
+                text: q.text,
+                answers: {
+                  create: q.answers?.map(a => ({
+                    text: a.text,
+                    isCorrect: a.isCorrect,
+                  })) || [],
+                },
+              })),
+            },
+          }
+        : {}),
+    },
+    include: {
+      questions: {
+        include: { answers: true },
+      },
+    },
+  });
+}
 }

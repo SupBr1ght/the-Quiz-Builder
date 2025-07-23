@@ -26,7 +26,7 @@ const CreateQuizPage = () => {
                 questions: questions.filter(q => q.trim() !== '')
                     .map(q => ({
                         text: q,
-                        answers: [], // якщо є
+                        answers: [], 
                     }))
             });
 
